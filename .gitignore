@@ -1,0 +1,26 @@
+# Dependencias (Nunca se suben porque son pesadas y se pueden reinstalar)
+node_modules/
+bower_components/
+
+# Archivos de configuración local y secretos (¡MUY IMPORTANTE!)
+.env
+.env.local
+*.env
+
+# Carpetas de compilación o producción (el código optimizado que genera tu framework)
+dist/
+build/
+out/
+
+# Archivos del sistema operativo (basura que crean Windows y Mac)
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Configuraciones propias de VS Code que no necesitas compartir
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
