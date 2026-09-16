@@ -1,0 +1,9 @@
+{
+  "impresoras": [
+    {
+      "nombre": "caja",
+      "PRINTER_NAME": "XP-80C",
+      "PRINTER_PORT": "USB001"
+    }
+  ]
+}

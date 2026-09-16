@@ -7,6 +7,7 @@ require('dotenv').config();
 const ESC = 0x1B;
 const GS  = 0x1D;
 
+
 const CMD = {
   INIT:        Buffer.from([ESC, 0x40]),
   ALIGN_CT:    Buffer.from([ESC, 0x61, 0x01]),
@@ -20,9 +21,18 @@ const CMD = {
   LF:          Buffer.from([0x0A]),
 };
 
+
+
 function txt(str) {
   return Buffer.from(str + '\n', 'latin1');
 }
+
+
+//nueva
+function txt(str) {
+  return Buffer.from(str + '\r\n', 'latin1');
+}
+
 
 function linea() {
   return txt('-'.repeat(40));
@@ -32,13 +42,18 @@ function buildTicket(comanda, items) {
   const buffers = [];
 
   buffers.push(CMD.INIT);
-  buffers.push(CMD.ALIGN_CT);
+
+  // Configuración que dio mejor resultado
+  buffers.push(CMD.FONT_A);
+  buffers.push(CMD.DOUBLE_WIDTH);
   buffers.push(CMD.BOLD_ON);
-  buffers.push(CMD.FONT_LARGE);
+
+  buffers.push(CMD.ALIGN_CT);
   buffers.push(txt('COMANDA'));
-  buffers.push(CMD.FONT_NORMAL);
-  buffers.push(CMD.BOLD_OFF);
+
   buffers.push(linea());
+
+// Mantener el mismo tamaño para todo el ticket
 
   buffers.push(CMD.ALIGN_LT);
   buffers.push(txt(`#${comanda.id}  ${new Date(comanda.creado_en).toLocaleString('es-AR')}`));
@@ -58,13 +73,16 @@ function buildTicket(comanda, items) {
   buffers.push(CMD.ALIGN_RT);
   buffers.push(CMD.BOLD_ON);
   buffers.push(txt(`TOTAL: $${Number(comanda.total).toFixed(2)}`));
-  buffers.push(CMD.BOLD_OFF);
+  //buffers.push(CMD.BOLD_OFF);
   buffers.push(CMD.ALIGN_LT);
 
   if (comanda.notas) {
     buffers.push(linea());
     buffers.push(txt(`Notas: ${comanda.notas}`));
   }
+
+  buffers.push(CMD.FONT_NORMAL);
+  buffers.push(CMD.BOLD_OFF);
 
   buffers.push(CMD.LF);
   buffers.push(CMD.LF);

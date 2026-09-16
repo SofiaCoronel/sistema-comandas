@@ -1,0 +1,27 @@
+{
+  "name": "print-agent",
+  "version": "1.0.0",
+  "main": "src/agent.js",
+  "bin": "src/agent.js",
+  "scripts": {
+    "start": "node src/agent.js",
+    "dev": "nodemon src/agent.js",
+    "build": "pkg . --target node18-win-x64 --output dist/PrintAgent.exe --assets public/**,src/rawprint.ps1"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "src/rawprint.ps1"
+    ],
+    "targets": ["node18-win-x64"]
+  }
+}

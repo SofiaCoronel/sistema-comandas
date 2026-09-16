@@ -5,12 +5,17 @@ import NuevaComanda from '../views/NuevaComanda.vue';
 import Login from '../views/Login.vue';
 import Historial from '../views/Historial.vue';
 import Catalogo from '../views/Catalogo.vue';
+import Configuracion from '../views/Configuracion.vue';
+import Caja from '../views/Caja.vue';
+
 
 const routes = [
   { path: '/', component: NuevaComanda },
   { path: '/login', component: Login },
   { path: '/historial', component: Historial, meta: { requiresAuth: true } },
   { path: '/catalogo', component: Catalogo, meta: { requiresAuth: true } },
+  { path: '/configuracion', component: Configuracion, meta: { requiresAuth: true } },
+  { path: '/caja', component: Caja, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({ history: createWebHistory(), routes });

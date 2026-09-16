@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Print Agent — Config</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+<div class="container py-4" style="max-width:600px">
+  <h4>🖨️ Print Agent — Configuración</h4>
+  <hr />
+
+  <h6>Impresoras detectadas</h6>
+  <select id="selectImpresora" class="form-select mb-2"></select>
+  <input id="inputNombre" class="form-control mb-2" placeholder="Nombre del sector (ej: Cocina, Caja, Barra)" />
+  <button class="btn btn-primary mb-4" onclick="agregarImpresora()">Agregar</button>
+
+  <h6>Impresoras configuradas</h6>
+  <ul class="list-group mb-3" id="listaConfig"></ul>
+
+  <button class="btn btn-success w-100" onclick="guardarConfig()">Guardar configuración</button>
+  <div id="mensaje" class="mt-2"></div>
+</div>
+
+<script>
+  let impresoras = [];
+  let config = { impresoras: [] };
+
+  async function cargar() {
+    const [resImp, resCfg] = await Promise.all([
+      fetch('/api/impresoras').then(r => r.json()),
+      fetch('/api/config').then(r => r.json()),
+    ]);
+
+    impresoras = resImp;
+    config = resCfg;
+
+    const select = document.getElementById('selectImpresora');
+    select.innerHTML = impresoras.map(i =>
+      `<option value="${i.Name}|${i.PortName}">${i.Name} (${i.PortName})</option>`
+    ).join('');
+
+    renderConfig();
+  }
+
+  function renderConfig() {
+    const lista = document.getElementById('listaConfig');
+    lista.innerHTML = config.impresoras.length === 0
+      ? '<li class="list-group-item text-muted">Sin impresoras configuradas</li>'
+      : config.impresoras.map((imp, i) => `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><strong>${imp.nombre}</strong> — ${imp.PRINTER_NAME} (${imp.PRINTER_PORT})</span>
+            <button class="btn btn-sm btn-danger" onclick="eliminar(${i})">X</button>
+          </li>
+        `).join('');
+  }
+
+  function agregarImpresora() {
+    const select = document.getElementById('selectImpresora');
+    const nombre = document.getElementById('inputNombre').value.trim();
+    if (!nombre) { alert('Ingresá un nombre para el sector'); return; }
+
+    const [PRINTER_NAME, PRINTER_PORT] = select.value.split('|');
+    config.impresoras.push({ nombre, PRINTER_NAME, PRINTER_PORT });
+    document.getElementById('inputNombre').value = '';
+    renderConfig();
+  }
+
+  function eliminar(i) {
+    config.impresoras.splice(i, 1);
+    renderConfig();
+  }
+
+  async function guardarConfig() {
+    await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+    document.getElementById('mensaje').innerHTML = '<div class="alert alert-success py-1">Guardado correctamente</div>';
+    setTimeout(() => document.getElementById('mensaje').innerHTML = '', 3000);
+  }
+
+  cargar();
+</script>
+</body>
+</html>
