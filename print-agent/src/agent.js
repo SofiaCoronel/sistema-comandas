@@ -71,6 +71,10 @@ app.get('/api/config', (req, res) => {
   res.json(cargarConfig());
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, timestamp: new Date().toISOString() });
+});
+
 app.post('/api/config', (req, res) => {
   guardarConfig(req.body);
   res.json({ ok: true });

@@ -123,9 +123,17 @@
 
         <div v-if="mensaje" class="msg-ok">{{ mensaje }}</div>
 
-        <button class="btn-primary w-full mt-3" :disabled="enviando || items.length === 0" @click="confirmar">
-          {{ enviando ? 'Enviando...' : 'Confirmar e Imprimir' }}
+        <button class="btn-primary w-full mt-3" :class="{ 'btn-exito': exito }"
+          :disabled="enviando || items.length === 0" @click="confirmar">
+          <span v-if="exito">✓ Enviado</span>
+          <span v-else-if="enviando">Enviando...</span>
+          <span v-else>Confirmar e Imprimir</span>
         </button>
+
+        <div class="agent-indicator" :class="printAgent.conectado ? 'online' : 'offline'">
+          <span class="dot"></span>
+          {{ printAgent.conectado ? 'Print Agent activo' : 'Print Agent no detectado' }}
+        </div>
       </div>
     </div>
   </div>
@@ -135,9 +143,14 @@
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { API_URL, useAuthStore } from '../stores/auth';
+import { useToast } from '../composables/useToast';
+import { usePrintAgent } from '../stores/PrintAgent';
+
 
 const auth = useAuthStore();
 const headers = { Authorization: `Bearer ${auth.token}` };
+const { success, error } = useToast();
+const printAgent = usePrintAgent();
 
 const productos = ref([]);
 const items = ref([]);
@@ -154,6 +167,7 @@ const distancia_km = ref(null);
 const distancia_manual = ref('');
 const calculandoEnvio = ref(false);
 const cajaAbierta = ref(false);
+const exito = ref(false);
 
 // Clientes frecuentes
 const busqueda_cliente = ref('');
@@ -265,7 +279,9 @@ async function confirmar() {
     alert('Completá el nombre y al menos un producto');
     return;
   }
+
   enviando.value = true;
+
   try {
     await axios.post(`${API_URL}/comandas`, {
       cliente_nombre: cliente_nombre.value,
@@ -278,15 +294,21 @@ async function confirmar() {
       items: items.value,
     });
 
+    exito.value = true;
+    setTimeout(() => (exito.value = false), 2000);
+
     // Incrementar pedidos del cliente
     if (cliente_celular.value) {
-      axios.post(`${API_URL}/clientes/incrementar`,
+      axios.post(
+        `${API_URL}/clientes/incrementar`,
         { celular: cliente_celular.value },
         { headers }
       ).catch(() => { });
     }
 
-    mensaje.value = '✓ Comanda enviada';
+    // Mensaje de éxito
+    success('✓ Comanda enviada e impresa');
+
     items.value = [];
     cliente_nombre.value = '';
     cliente_celular.value = '';
@@ -300,9 +322,10 @@ async function confirmar() {
     busqueda_cliente.value = '';
     clientes_sugeridos.value = [];
     cliente_guardado.value = false;
-    setTimeout(() => (mensaje.value = ''), 3000);
+
   } catch {
-    alert('Error al enviar la comanda');
+    // Mensaje de error
+    error('Error al enviar la comanda');
   } finally {
     enviando.value = false;
   }
@@ -622,6 +645,45 @@ async function confirmar() {
   font-weight: 500;
   margin-top: 10px;
   text-align: center;
+}
+
+.btn-exito {
+  background: #10b981 !important;
+  transform: scale(1.01);
+  transition: all 0.3s ease;
+}
+
+.agent-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.agent-indicator.online {
+  color: #10b981;
+}
+
+.agent-indicator.offline {
+  color: #adb5bd;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.online .dot {
+  background: #10b981;
+}
+
+.offline .dot {
+  background: #adb5bd;
 }
 
 .w-full {

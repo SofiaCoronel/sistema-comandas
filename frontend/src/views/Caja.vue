@@ -150,6 +150,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { API_URL, useAuthStore } from '../stores/auth';
 import jsPDF from 'jspdf';
+import { useConfirm } from '../composables/useConfirm';
+const { confirmar } = useConfirm();
 
 const auth = useAuthStore();
 const headers = { Authorization: `Bearer ${auth.token}` };
@@ -182,13 +184,25 @@ async function cargarResumen() {
 }
 
 async function abrirCaja() {
-  if (!confirm('¿Abrís la tienda ahora?')) return;
+  const ok = await confirmar({
+    t: '¿Abrís la tienda?',
+    m: 'Se comenzará a registrar los pedidos y ventas del día.',
+    label: '🟢 Abrir tienda',
+    tipo: 'success',
+  });
+  if (!ok) return;
   await axios.post(`${API_URL}/caja/abrir`, {}, { headers });
   await cargar();
 }
 
 async function cerrarCaja() {
-  if (!confirm('¿Cerrás la tienda? Se guardará el resumen de ventas.')) return;
+  const ok = await confirmar({
+    t: '¿Cerrás la tienda?',
+    m: 'Se guardará el resumen de ventas del día y no se contarán más pedidos en esta sesión.',
+    label: '🔴 Cerrar tienda',
+    tipo: 'danger',
+  });
+  if (!ok) return;
   await axios.post(`${API_URL}/caja/cerrar`, {}, { headers });
   await cargar();
 }

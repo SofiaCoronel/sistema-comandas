@@ -17,6 +17,8 @@
   <main class="main-content">
     <router-view />
   </main>
+  <ConfirmModal />
+  <ToastContainer />
 </template>
 
 <script setup>
@@ -26,15 +28,22 @@ import { useWsStore } from './stores/ws';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { API_URL } from './stores/auth';
+import { usePrintAgent } from './stores/PrintAgent';
 
 const auth = useAuthStore();
 const ws = useWsStore();
 const router = useRouter();
+const printAgent = usePrintAgent();
+
 const pendientes = ref(0);
 let intervaloBadge = null;
 
+
 onMounted(() => {
   ws.conectar(import.meta.env.VITE_WS_URL);
+
+  // Iniciar agente de impresión
+  printAgent.iniciar();
 
   if (auth.token) {
     cargarPendientes();
@@ -46,22 +55,36 @@ onMounted(() => {
   });
 
   ws.on('estado_actualizado', (msg) => {
-    if (msg.comanda.estado === 'entregado' || msg.comanda.estado === 'cancelado') {
+    if (
+      msg.comanda.estado === 'entregado' ||
+      msg.comanda.estado === 'cancelado'
+    ) {
       if (pendientes.value > 0) pendientes.value--;
     }
   });
 });
 
-onUnmounted(() => clearInterval(intervaloBadge));
+onUnmounted(() => {
+  clearInterval(intervaloBadge);
+
+  // Detener agente de impresión
+  printAgent.detener();
+});
 
 async function cargarPendientes() {
   if (!auth.token) return;
+
   try {
     const { data } = await axios.get(`${API_URL}/comandas`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
+      headers: {
+        Authorization: `Bearer ${auth.token}`,
+      },
     });
-    pendientes.value = data.filter((c) => c.estado === 'pendiente').length;
-  } catch {}
+
+    pendientes.value = data.filter(
+      (c) => c.estado === 'pendiente'
+    ).length;
+  } catch { }
 }
 
 function salir() {
@@ -72,10 +95,17 @@ function salir() {
 }
 </script>
 
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   font-family: 'Inter', sans-serif;
@@ -92,7 +122,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .brand {
@@ -109,7 +139,7 @@ body {
 }
 
 .nav-links a {
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -121,12 +151,12 @@ body {
 .nav-links a:hover,
 .nav-links a.router-link-active {
   color: #fff;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .nav-link-badge {
   position: relative;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -134,10 +164,11 @@ body {
   border-radius: 6px;
   transition: all 0.15s;
 }
+
 .nav-link-badge:hover,
 .nav-link-badge.router-link-active {
   color: #fff;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .badge-pendientes {
@@ -165,10 +196,13 @@ body {
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-salir:hover { background: #c1121f; }
+
+.btn-salir:hover {
+  background: #c1121f;
+}
 
 .btn-login {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: #fff !important;
   padding: 6px 14px;
   border-radius: 6px;
@@ -184,7 +218,7 @@ body {
   background: #fff;
   border-radius: 10px;
   border: 1px solid #e9ecef;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .btn-primary {
@@ -199,7 +233,14 @@ body {
   transition: background 0.15s;
   font-size: 0.95rem;
 }
-.btn-primary:hover { background: #c1121f; }
-.btn-primary:disabled { background: #adb5bd; cursor: not-allowed; }
+
+.btn-primary:hover {
+  background: #c1121f;
+}
+
+.btn-primary:disabled {
+  background: #adb5bd;
+  cursor: not-allowed;
+}
 </style>
 ```

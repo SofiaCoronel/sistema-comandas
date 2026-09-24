@@ -11,15 +11,10 @@
     </div>
 
 
-    <div class="osrm-estado" :class="{ alerta: osrmEstado.restantes < 20 }">
-      🛵 Consultas de ruta hoy: <strong>{{ osrmEstado.requests_hoy }}</strong> / {{ osrmEstado.limite }}
-      <span v-if="osrmEstado.restantes < 20" style="color:#E63946"> — ⚠️ Quedan pocas consultas</span>
-    </div>
-
     <!-- Tab: Envío -->
     <div v-if="tabActivo === 'envio'" class="card p-4">
       <h5 class="tab-title">Tabla de precios de envío</h5>
-      <p class="text-muted mb-3" style="font-size:0.875rem">El último tramo aplica para distancias mayores.</p>
+      <p class="text-muted mb-3" style="font-size:0.875rem">Distancias mayores aumenta $200 cada 0.5 km.</p>
 
       <table class="tabla-envio">
         <thead>
@@ -132,7 +127,8 @@
           <div class="step-content">
             <h6>Ejecutá el archivo</h6>
             <p>Doble click en <strong>PrintAgent.exe</strong>. Si Windows muestra una advertencia, hacé click en
-              <strong>"Más información" → "Ejecutar de todas formas"</strong>.</p>
+              <strong>"Más información" → "Ejecutar de todas formas"</strong>.
+            </p>
           </div>
         </div>
 
@@ -157,6 +153,19 @@
       </div>
 
       <div class="info-box mt-4">
+        <strong>📋 Requisito previo — Instalar driver de impresora:</strong>
+        <ul class="mt-2">
+          <li>Conectá la impresora por USB</li>
+          <li>Descargá e instalá el driver genérico para impresoras térmicas de 80mm:
+            <a href="https://www.gainscha.com.tw/driver.html" target="_blank" class="link-driver">
+              ⬇️ Descargar driver POS-80 (Gainscha)
+            </a>
+          </li>
+          <li>Verificá que aparezca en <strong>Configuración → Impresoras y escáneres</strong></li>
+          <li>Hacé una impresión de prueba desde Windows para confirmar que funciona</li>
+          <li>Recién ahí instalá y configurá el Print Agent</li>
+        </ul>
+
         <strong>⚠️ Importante:</strong>
         <ul class="mt-2">
           <li>El Print Agent debe estar corriendo siempre que la tienda esté abierta.</li>
@@ -171,6 +180,12 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { API_URL, useAuthStore } from '../stores/auth';
+import { useConfirm } from '../composables/useConfirm';
+import { useToast } from '../composables/useToast';
+
+const { confirmar } = useConfirm();
+const { success, error } = useToast();
+
 
 const auth = useAuthStore();
 const tabActivo = ref('envio');
@@ -205,35 +220,6 @@ onMounted(async () => {
   usuarios.value = res.data;
 });
 
-// Dirección del local
-function buscarDireccionLocal() {
-  clearTimeout(debounceTimer);
-  if (local.value.direccion_input.length < 4) { sugerenciasLocal.value = []; return; }
-  debounceTimer = setTimeout(async () => {
-    const { data } = await axios.get(`${API_URL}/geo/autocomplete`, {
-      params: { q: local.value.direccion_input },
-    });
-    sugerenciasLocal.value = data;
-  }, 400);
-}
-
-function seleccionarDireccionLocal(s) {
-  local.value.direccion = s.label;
-  local.value.direccion_input = s.label;
-  local.value.lat = s.lat;
-  local.value.lng = s.lng;
-  sugerenciasLocal.value = [];
-}
-
-async function guardarLocal() {
-  await axios.put(`${API_URL}/configuracion/local_nombre`, { valor: local.value.nombre }, { headers });
-  await axios.put(`${API_URL}/configuracion/local_telefono`, { valor: local.value.telefono }, { headers });
-  await axios.put(`${API_URL}/configuracion/local_direccion`, { valor: local.value.direccion }, { headers });
-  await axios.put(`${API_URL}/configuracion/local_lat`, { valor: local.value.lat }, { headers });
-  await axios.put(`${API_URL}/configuracion/local_lng`, { valor: local.value.lng }, { headers });
-  msg.value.local = '✓ Datos guardados correctamente';
-  setTimeout(() => (msg.value.local = ''), 3000);
-}
 
 // Envío
 function agregarTramo() {
@@ -246,8 +232,7 @@ function agregarTramo() {
 
 async function guardarEnvio() {
   await axios.put(`${API_URL}/configuracion/envio_tabla`, { valor: envio.value.tabla }, { headers });
-  msg.value.envio = '✓ Tabla de envío guardada';
-  setTimeout(() => (msg.value.envio = ''), 3000);
+  success('✓ Tabla de envío guardada');
 }
 
 // Usuarios
@@ -256,6 +241,8 @@ async function crearUsuario() {
   try {
     const { data } = await axios.post(`${API_URL}/usuarios`, nuevo.value, { headers });
     usuarios.value.unshift(data);
+    success('Usuario creado correctamente');
+
     nuevo.value = { nombre: '', email: '', password: '' };
   } catch (e) {
     msg.value.nuevoError = e.response?.data?.error || 'Error al crear usuario';
@@ -263,7 +250,13 @@ async function crearUsuario() {
 }
 
 async function eliminarUsuario(u) {
-  if (!confirm(`¿Eliminar usuario ${u.nombre}?`)) return;
+  const ok = await confirmar({
+    t: `¿Eliminar a ${u.nombre}?`,
+    m: 'El usuario perderá acceso al sistema inmediatamente.',
+    label: 'Eliminar',
+    tipo: 'danger',
+  });
+  if (!ok) return;
   await axios.delete(`${API_URL}/usuarios/${u.id}`, { headers });
   usuarios.value = usuarios.value.filter((x) => x.id !== u.id);
 }
@@ -285,7 +278,7 @@ async function cambiarPassword() {
       password_actual: pass.value.actual,
       password_nuevo: pass.value.nueva,
     }, { headers });
-    msg.value.passOk = '✓ Contraseña actualizada';
+    success('Contraseña actualizada');
     pass.value = { actual: '', nueva: '', confirmar: '' };
   } catch (e) {
     msg.value.passError = e.response?.data?.error || 'Error al cambiar contraseña';
@@ -371,8 +364,19 @@ async function cambiarPassword() {
   font-size: 0.875rem;
 }
 
-.steps { display: flex; flex-direction: column; gap: 20px; margin-top: 8px; }
-.step { display: flex; gap: 14px; align-items: flex-start; }
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
 .step-num {
   width: 30px;
   height: 30px;
@@ -386,8 +390,19 @@ async function cambiarPassword() {
   font-size: 0.85rem;
   flex-shrink: 0;
 }
-.step-content h6 { font-size: 0.9rem; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
-.step-content p { font-size: 0.875rem; color: #6c757d; margin-bottom: 8px; }
+
+.step-content h6 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.step-content p {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
 
 .btn-download {
   display: inline-block;
@@ -400,7 +415,10 @@ async function cambiarPassword() {
   font-size: 0.875rem;
   transition: background 0.15s;
 }
-.btn-download:hover { background: #c1121f; }
+
+.btn-download:hover {
+  background: #c1121f;
+}
 
 .btn-secondary {
   display: inline-block;
@@ -414,7 +432,11 @@ async function cambiarPassword() {
   font-size: 0.875rem;
   transition: all 0.15s;
 }
-.btn-secondary:hover { background: #1a1a2e; color: #fff; }
+
+.btn-secondary:hover {
+  background: #1a1a2e;
+  color: #fff;
+}
 
 .info-box {
   background: #fff3cd;
@@ -424,8 +446,25 @@ async function cambiarPassword() {
   font-size: 0.875rem;
   color: #856404;
 }
-.info-box ul { padding-left: 18px; margin: 0; }
-.info-box li { margin-bottom: 6px; }
+
+.info-box ul {
+  padding-left: 18px;
+  margin: 0;
+}
+
+.info-box li {
+  margin-bottom: 6px;
+}
+
+.link-driver {
+  display: inline-block;
+  margin-top: 4px;
+  color: #E63946;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.link-driver:hover { text-decoration: underline; }
 
 code {
   display: inline-block;
@@ -438,10 +477,21 @@ code {
   margin-top: 4px;
 }
 
-.my-4 { margin: 16px 0; }
-.mt-2 { margin-top: 8px; }
-.mt-4 { margin-top: 16px; }
-.mb-4 { margin-bottom: 16px; }
+.my-4 {
+  margin: 16px 0;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+.mt-4 {
+  margin-top: 16px;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
 
 .sugerencias {
   border: 1.5px solid #dee2e6;

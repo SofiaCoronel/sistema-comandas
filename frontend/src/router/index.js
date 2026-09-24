@@ -7,6 +7,7 @@ import Historial from '../views/Historial.vue';
 import Catalogo from '../views/Catalogo.vue';
 import Configuracion from '../views/Configuracion.vue';
 import Caja from '../views/Caja.vue';
+import Estadisticas from '../views/Estadisticas.vue';
 
 
 const routes = [
@@ -16,6 +17,7 @@ const routes = [
   { path: '/catalogo', component: Catalogo, meta: { requiresAuth: true } },
   { path: '/configuracion', component: Configuracion, meta: { requiresAuth: true } },
   { path: '/caja', component: Caja, meta: { requiresAuth: true } },
+  { path: '/estadisticas', component: Estadisticas, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({ history: createWebHistory(), routes });

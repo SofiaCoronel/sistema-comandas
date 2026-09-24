@@ -112,6 +112,12 @@
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { API_URL, useAuthStore } from '../stores/auth';
+import { useConfirm } from '../composables/useConfirm';
+import { useToast } from '../composables/useToast';
+
+const { confirmar } = useConfirm();
+const { success, error } = useToast();
+
 
 const productos = ref([]);
 const auth = useAuthStore();
@@ -141,6 +147,8 @@ async function guardar() {
   }
   cancelarEdicion();
   cargar();
+  success(editando.value ? 'Producto actualizado' : 'Producto agregado');
+
 }
 
 function editar(p) {
@@ -155,10 +163,17 @@ function cancelarEdicion() {
 }
 
 async function eliminar(id) {
-  if (confirm('¿Eliminar producto?')) {
-    await axios.delete(`${API_URL}/catalogo/${id}`, { headers });
-    cargar();
-  }
+  const ok = await confirmar({
+    t: '¿Eliminar producto?',
+    m: 'Esta acción no se puede deshacer.',
+    label: 'Eliminar',
+    tipo: 'danger',
+  });
+  if (!ok) return;
+  await axios.delete(`${API_URL}/catalogo/${id}`, { headers });
+  cargar();
+  success('Producto eliminado');
+
 }
 </script>
 

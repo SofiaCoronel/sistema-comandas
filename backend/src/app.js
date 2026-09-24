@@ -14,6 +14,8 @@ const configuracionRoutes = require('./routes/configuracion');
 const geoRoutes = require('./routes/geo');
 const clientesRoutes = require('./routes/clientes');
 const cajaRoutes = require('./routes/caja');
+const estadisticasRoutes = require('./routes/estadisticas');
+
 
 
 const app = express();
@@ -28,6 +30,7 @@ app.use('/api/configuracion', configuracionRoutes);
 app.use('/api/geo', geoRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/caja', cajaRoutes);
+app.use('/api/estadisticas', estadisticasRoutes);
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
