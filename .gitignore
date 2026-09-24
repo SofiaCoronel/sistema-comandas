@@ -24,3 +24,12 @@ desktop.ini
 *.njsproj
 *.sln
 *.sw?
+
+# Temporales backend
+backend/temp/
+backend/bin/
+
+# Print Agent
+print-agent/agent.env
+print-agent/config.json
+print-agent/dist/
