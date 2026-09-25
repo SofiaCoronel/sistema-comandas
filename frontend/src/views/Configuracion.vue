@@ -655,4 +655,41 @@ code {
 .small {
   font-size: 0.8rem;
 }
+
+@media (max-width: 768px) {
+  .tabs { gap: 4px; }
+  .tab-btn { padding: 6px 10px; font-size: 0.78rem; }
+
+  .form-grid { grid-template-columns: 1fr; }
+
+  .tabla-usuarios thead { display: none; }
+  .tabla-usuarios tr {
+    display: block;
+    border: 1.5px solid var(--border, #e9ecef);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+  .tabla-usuarios td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border, #f1f3f5);
+    padding: 6px 4px;
+    font-size: 0.875rem;
+  }
+  .tabla-usuarios td:last-child { border-bottom: none; justify-content: flex-end; }
+
+  .tabla-envio thead { display: none; }
+  .tabla-envio tr {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border, #f1f3f5);
+  }
+  .tabla-envio td { padding: 0; }
+  .input-sm { width: 80px; }
+}
+
 </style>

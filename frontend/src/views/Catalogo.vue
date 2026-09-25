@@ -408,9 +408,27 @@ async function eliminar(id) {
 }
 
 @media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
+  .form-grid { grid-template-columns: 1fr; }
+  
+  .tabla-catalogo thead { display: none; }
+  .tabla-catalogo tr {
+    display: block;
+    border: 1.5px solid var(--border, #e9ecef);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 10px;
   }
+  .tabla-catalogo td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border, #f1f3f5);
+    padding: 6px 4px;
+    font-size: 0.875rem;
+  }
+  .tabla-catalogo td:last-child { border-bottom: none; }
+  .td-precio { color: #E63946; font-weight: 700; }
+  .td-acciones { justify-content: flex-end; gap: 8px; }
 }
 
 @media (max-width: 480px) {

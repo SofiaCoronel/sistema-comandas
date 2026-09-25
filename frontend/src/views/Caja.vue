@@ -432,4 +432,18 @@ const totalVentas = computed(() => historial.value.reduce((acc, s) => acc + Numb
 .text-muted {
   color: #6c757d;
 }
+
+@media (max-width: 768px) {
+  .resumen-grid { grid-template-columns: 1fr 1fr; max-width: 100%; }
+
+  .tabla-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .tabla-caja {
+    min-width: 600px;
+    font-size: 0.78rem;
+  }
+  .tabla-caja th, .tabla-caja td { padding: 8px 6px; }
+
+  .btn-abrir, .btn-cerrar { width: 100%; }
+}
 </style>
