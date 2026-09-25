@@ -680,16 +680,7 @@ code {
   }
   .tabla-usuarios td:last-child { border-bottom: none; justify-content: flex-end; }
 
-  .tabla-envio thead { display: none; }
-  .tabla-envio tr {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border, #f1f3f5);
-  }
-  .tabla-envio td { padding: 0; }
-  .input-sm { width: 80px; }
+  
 }
 
 </style>
