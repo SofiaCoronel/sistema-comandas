@@ -722,5 +722,24 @@ async function confirmar() {
   .form-grid {
     grid-template-columns: 1fr;
   }
+
+  .sticky-pedido {
+    position: static;
+    margin-top: 16px;
+  }
+
+  .productos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .entrega-toggle,
+  .pago-toggle {
+    flex-direction: column;
+  }
+
+  .entrega-btn,
+  .pago-btn {
+    width: 100%;
+  }
 }
 </style>

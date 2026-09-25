@@ -720,4 +720,23 @@ async function cargarResumen() {
 .flex-column {
   flex-direction: column;
 }
+
+@media (max-width: 768px) {
+  .historial-header { flex-direction: column; align-items: flex-start; }
+
+  .btn-entregar-todos,
+  .btn-stats,
+  .btn-limpiar { margin-top: 8px; width: 100%; text-align: center; }
+
+  .btn-group { width: 100%; }
+  .tab-btn { flex: 1; font-size: 0.75rem; padding: 6px 4px; text-align: center; }
+
+  .resumen-historial { gap: 6px; }
+  .resumen-chip { font-size: 0.75rem; padding: 5px 8px; }
+
+  .col-md-4 { width: 100%; }
+
+  .d-flex.gap-1.mt-auto { flex-wrap: wrap; }
+  .btn-secundario, .btn-wsp { flex: 1; min-width: 80px; font-size: 0.72rem; }
+}
 </style>

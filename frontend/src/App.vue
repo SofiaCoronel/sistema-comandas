@@ -242,5 +242,40 @@ body {
   background: #adb5bd;
   cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 16px;
+  }
+
+  .nav-links {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .nav-links a,
+  .nav-link-badge {
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 6px 4px;
+  }
+
+  .btn-salir {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .btn-darkmode {
+    display: none;
+  }
+
+  .main-content {
+    padding: 16px 12px;
+  }
+}
 </style>
 ```
