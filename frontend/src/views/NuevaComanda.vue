@@ -4,7 +4,7 @@
     <div class="col-catalogo">
       <div class="card p-3 mb-3">
         <h2 class="section-title mb-3">Nuevo Pedido</h2>
-        <div v-if="!cajaAbierta" class="alerta-caja">
+        <div v-if="!cargandoCaja && !cajaAbierta" class="alerta-caja">
           ⚠️ La tienda está cerrada. Abrila en <router-link to="/caja">Caja</router-link> antes de tomar pedidos.
         </div>
 
@@ -168,6 +168,8 @@ const distancia_manual = ref('');
 const calculandoEnvio = ref(false);
 const cajaAbierta = ref(false);
 const exito = ref(false);
+const cargandoCaja = ref(true);
+
 
 // Clientes frecuentes
 const busqueda_cliente = ref('');
@@ -190,6 +192,20 @@ onMounted(async () => {
     cajaAbierta.value = !!caja;
   } catch {
     cajaAbierta.value = false;
+  }
+});
+
+onMounted(async () => {
+  const { data: catalogo } = await axios.get(`${API_URL}/catalogo`);
+  productos.value = catalogo;
+
+  try {
+    const { data: caja } = await axios.get(`${API_URL}/caja/estado`, { headers });
+    cajaAbierta.value = !!caja;
+  } catch {
+    cajaAbierta.value = false;
+  } finally {
+    cargandoCaja.value = false;
   }
 });
 

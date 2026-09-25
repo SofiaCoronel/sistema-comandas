@@ -31,7 +31,11 @@
     </button>
   </div>
 
-  <div v-if="comandasFiltradas.length === 0" class="text-muted">
+  <div v-if="cargando" class="skeleton-grid">
+    <div v-for="i in 3" :key="i" class="skeleton-card"></div>
+  </div>
+
+  <div v-else-if="comandasFiltradas.length === 0" class="text-muted">
     No hay pedidos para mostrar.
   </div>
 
@@ -239,6 +243,7 @@ const busqueda = ref('');
 const detalle = ref(null);
 const fechaBusqueda = ref('');
 const resumen = ref({ pedidos_hoy: 0, ventas_hoy: 0, cancelados_hoy: 0 });
+const cargando = ref(true);
 
 
 const filtros = [
@@ -297,9 +302,11 @@ onUnmounted(() => {
 });
 
 async function cargar() {
+  cargando.value = true;
   const params = fechaBusqueda.value ? { fecha: fechaBusqueda.value } : {};
   const { data } = await axios.get(`${API_URL}/comandas`, { headers, params });
   comandas.value = data;
+  cargando.value = false;
 }
 
 function limpiarFecha() {
@@ -419,7 +426,31 @@ async function cargarResumen() {
   transition: all 0.15s;
   display: inline-block;
 }
-.btn-stats:hover { background: #bae6fd; }
+
+.btn-stats:hover {
+  background: #bae6fd;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.skeleton-card {
+  height: 200px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 10px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (max-width: 768px) {
+  .skeleton-grid { grid-template-columns: 1fr; }
+}
 
 .btn-limpiar {
   padding: 8px 12px;
@@ -722,21 +753,52 @@ async function cargarResumen() {
 }
 
 @media (max-width: 768px) {
-  .historial-header { flex-direction: column; align-items: flex-start; }
+  .historial-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   .btn-entregar-todos,
   .btn-stats,
-  .btn-limpiar { margin-top: 8px; width: 100%; text-align: center; }
+  .btn-limpiar {
+    margin-top: 8px;
+    width: 100%;
+    text-align: center;
+  }
 
-  .btn-group { width: 100%; }
-  .tab-btn { flex: 1; font-size: 0.75rem; padding: 6px 4px; text-align: center; }
+  .btn-group {
+    width: 100%;
+  }
 
-  .resumen-historial { gap: 6px; }
-  .resumen-chip { font-size: 0.75rem; padding: 5px 8px; }
+  .tab-btn {
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 6px 4px;
+    text-align: center;
+  }
 
-  .col-md-4 { width: 100%; }
+  .resumen-historial {
+    gap: 6px;
+  }
 
-  .d-flex.gap-1.mt-auto { flex-wrap: wrap; }
-  .btn-secundario, .btn-wsp { flex: 1; min-width: 80px; font-size: 0.72rem; }
+  .resumen-chip {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+  }
+
+  .col-md-4 {
+    width: 100%;
+  }
+
+  .d-flex.gap-1.mt-auto {
+    flex-wrap: wrap;
+  }
+
+  .btn-secundario,
+  .btn-wsp {
+    flex: 1;
+    min-width: 80px;
+    font-size: 0.72rem;
+  }
 }
 </style>
