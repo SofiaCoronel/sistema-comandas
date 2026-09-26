@@ -223,7 +223,7 @@ const pass = ref({ actual: '', nueva: '', confirmar: '' });
 const msg = ref({});
 const osrmEstado = ref({ requests_hoy: 0, limite: 200, restantes: 200 });
 
-const DOWNLOAD_URL = 'https://github.com/SofiaCoronel/sistema-comandas/releases/download/v1.0.0/PrintAgent.exe';
+const DOWNLOAD_URL = 'https://github.com/SofiaCoronel/sistema-comandas/releases/download/v1.2.0/PrintAgent.exe';
 
 
 let debounceTimer = null;
