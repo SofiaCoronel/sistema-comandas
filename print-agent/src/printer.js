@@ -125,17 +125,22 @@ async function imprimirComanda(comanda, items, printerName, printerPort) {
   const tmpFile = path.join(os.tmpdir(), `comanda-${comanda.id}.bin`);
   fs.writeFileSync(tmpFile, ticket);
 
-  const psScript = path.join(__dirname, './rawprint.ps1');
+  // Extraer rawprint.ps1 del snapshot pkg a una ruta física real
+  const psDestino = path.join(os.tmpdir(), 'rawprint.ps1');
+  if (!fs.existsSync(psDestino)) {
+    const psOrigen = path.join(__dirname, 'rawprint.ps1');
+    fs.copyFileSync(psOrigen, psDestino);
+  }
 
   return new Promise((resolve, reject) => {
     execFile('powershell.exe', [
       '-NoProfile',
       '-ExecutionPolicy', 'Bypass',
-      '-File', psScript,
+      '-File', psDestino,
       '-printer', printerName,
       '-file', tmpFile,
     ], { timeout: 10000 }, (err, stdout, stderr) => {
-      setTimeout(() => fs.unlink(tmpFile, () => { }), 3000);
+      setTimeout(() => fs.unlink(tmpFile, () => {}), 3000);
       if (err) reject(new Error(stderr || err.message));
       else resolve();
     });

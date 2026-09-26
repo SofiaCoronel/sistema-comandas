@@ -4,6 +4,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { imprimirComanda } = require('./printer');
 
 // Rutas base según si corre como .exe o como script
 const BASE_DIR = process.pkg
@@ -11,20 +12,9 @@ const BASE_DIR = process.pkg
   : path.join(__dirname, '..');
 
 const CONFIG_PATH = path.join(BASE_DIR, 'config.json');
-const ENV_PATH = path.join(BASE_DIR, 'agent.env');
 
-// Leer config de conexión desde agent.env
-let BACKEND_WS = 'ws://localhost:3000';
-let PANEL_PORT = 4000;
-
-if (fs.existsSync(ENV_PATH)) {
-  const lines = fs.readFileSync(ENV_PATH, 'utf8').split('\n');
-  lines.forEach((line) => {
-    const [key, val] = line.split('=');
-    if (key?.trim() === 'BACKEND_WS') BACKEND_WS = val?.trim();
-    if (key?.trim() === 'PANEL_PORT') PANEL_PORT = parseInt(val?.trim());
-  });
-}
+const BACKEND_WS = 'wss://sistema-comandas-backend.onrender.com';
+const PANEL_PORT = 4000;
 
 // Cargar/guardar config de impresoras
 function cargarConfig() {
@@ -56,13 +46,11 @@ function listarImpresoras() {
 const app = express();
 app.use(express.json());
 
-// Servir archivos estáticos del panel
 const PUBLIC_DIR = process.pkg
-  ? path.join(path.dirname(process.execPath), 'public')
+  ? path.join(__dirname, '../public')
   : path.join(__dirname, '../public');
 app.use(express.static(PUBLIC_DIR));
 
-// API del panel
 app.get('/api/impresoras', (req, res) => {
   res.json(listarImpresoras());
 });
@@ -80,20 +68,34 @@ app.post('/api/config', (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+});
+
 const server = http.createServer(app);
 server.listen(PANEL_PORT, () => {
   console.log(`Panel de config en http://localhost:${PANEL_PORT}`);
 });
 
 // WebSocket al backend
-const { imprimirComanda } = require('./printer');
-
 function conectar() {
   console.log(`Conectando a ${BACKEND_WS}...`);
   const ws = new WebSocket(BACKEND_WS);
+  let pingInterval = null;
 
   ws.on('open', () => {
     console.log('Print Agent conectado al backend');
+
+    // Enviar ping cada 20 segundos para mantener la conexión viva
+    pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.ping();
+      }
+    }, 20000);
+  });
+
+  ws.on('pong', () => {
+    // Conexión sigue viva
   });
 
   ws.on('message', async (data) => {
@@ -102,7 +104,6 @@ function conectar() {
       if (msg.type === 'nueva_comanda' || msg.type === 'reimprimir') {
         console.log(`Imprimiendo comanda #${msg.comanda.id}...`);
         const config = cargarConfig();
-
         for (const imp of config.impresoras) {
           try {
             await imprimirComanda(msg.comanda, msg.items, imp.PRINTER_NAME, imp.PRINTER_PORT);
@@ -117,12 +118,14 @@ function conectar() {
     }
   });
 
-  ws.on('close', () => {
-    console.log('Desconectado. Reconectando en 5s...');
+  ws.on('close', (code, reason) => {
+    clearInterval(pingInterval);
+    console.log(`Desconectado. Reconectando en 5s...`);
     setTimeout(conectar, 5000);
   });
 
   ws.on('error', (err) => {
+    clearInterval(pingInterval);
     console.error('Error WS:', err.message);
   });
 }

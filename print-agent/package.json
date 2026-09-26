@@ -6,7 +6,14 @@
   "scripts": {
     "start": "node src/agent.js",
     "dev": "nodemon src/agent.js",
-    "build": "pkg . --target node18-win-x64 --output dist/PrintAgent.exe --assets public/**,src/rawprint.ps1"
+    "build": "pkg . --target node18-win-x64 --output dist/PrintAgent.exe"
+  },
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "src/rawprint.ps1"
+    ],
+    "targets": ["node18-win-x64"]
   },
   "dependencies": {
     "ws": "^8.14.2",
@@ -16,12 +23,5 @@
   "devDependencies": {
     "nodemon": "^3.0.1",
     "pkg": "^5.8.1"
-  },
-  "pkg": {
-    "assets": [
-      "public/**/*",
-      "src/rawprint.ps1"
-    ],
-    "targets": ["node18-win-x64"]
   }
 }

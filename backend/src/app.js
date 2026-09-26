@@ -52,6 +52,9 @@ wss.on('connection', (ws, req) => {
   console.log('🟢 Print Agent conectado');
   console.log('IP:', req.socket.remoteAddress);
 
+  ws.on('ping', () => ws.pong());
+  ws.on('close', () => console.log('Print Agent desconectado'));
+
   // Confirmar conexión
   ws.send(JSON.stringify({
     tipo: 'conexion_ok',
