@@ -107,10 +107,25 @@
 
       <hr class="my-4" />
 
-      <h5 class="tab-title">Instalación del Print Agent</h5>
+      <h5 class="tab-title mb-3">Instalación del Print Agent</h5>
       <p class="text-muted mb-3" style="font-size:0.875rem">
-        Si todavía no tenés el Print Agent instalado en esta PC, descargalo y seguí los pasos.
+        Instalá el Print Agent en la PC que tiene la impresora conectada. Solo necesitás hacerlo una vez.
       </p>
+
+      <div class="info-box mb-4">
+        <strong>📋 Requisito previo — Instalar driver de impresora:</strong>
+        <ul class="mt-2">
+          <li>Conectá la impresora por USB</li>
+          <li>Descargá e instalá el driver genérico para impresoras térmicas de 80mm:
+            <a href="https://www.gainscha.com.tw/driver.html" target="_blank" class="link-driver">
+              ⬇️ Descargar driver POS-80 (Gainscha)
+            </a>
+          </li>
+          <li>Verificá que aparezca en <strong>Configuración → Impresoras y escáneres</strong></li>
+          <li>Hacé una impresión de prueba desde Windows para confirmar que funciona</li>
+          <li>Recién ahí instalá y configurá el Print Agent</li>
+        </ul>
+      </div>
 
       <div class="steps">
         <div class="step">
@@ -125,6 +140,16 @@
         <div class="step">
           <div class="step-num">2</div>
           <div class="step-content">
+            <h6>Guardá el archivo en una carpeta fija</h6>
+            <p>Copiá <strong>PrintAgent.exe</strong> a una carpeta fija, por ejemplo:</p>
+            <code>C:\PrintAgent\PrintAgent.exe</code>
+            <p class="mt-2">⚠️ No muevas el archivo después — si lo movés, el inicio automático deja de funcionar.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
             <h6>Ejecutá el archivo</h6>
             <p>Doble click en <strong>PrintAgent.exe</strong>. Si Windows muestra una advertencia, hacé click en
               <strong>"Más información" → "Ejecutar de todas formas"</strong>.
@@ -133,43 +158,35 @@
         </div>
 
         <div class="step">
-          <div class="step-num">3</div>
+          <div class="step-num">4</div>
           <div class="step-content">
             <h6>Configurá tu impresora</h6>
-            <p>Una vez corriendo el Print Agent, abrí el panel:</p>
+            <p>Una vez corriendo el Print Agent, abrí el panel y seleccioná tu impresora:</p>
             <a href="http://localhost:4000" target="_blank" class="btn-secondary">🖥️ Abrir panel de configuración</a>
           </div>
         </div>
 
         <div class="step">
-          <div class="step-num">4</div>
+          <div class="step-num">5</div>
           <div class="step-content">
-            <h6>Inicio automático (opcional)</h6>
-            <p>Para que arranque solo al encender la PC, creá un acceso directo del <strong>PrintAgent.exe</strong> en:
-            </p>
-            <code>C:\Users\TU_USUARIO\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup</code>
+            <h6>Configurá el inicio automático con Windows</h6>
+            <ol class="mt-1">
+              <li>Click derecho en <strong>PrintAgent.exe</strong> → <strong>"Crear acceso directo"</strong></li>
+              <li>Presioná <strong>Windows + R</strong>, escribí <code>shell:startup</code> y presioná Enter</li>
+              <li>Pegá el acceso directo en esa carpeta</li>
+            </ol>
+            <p class="mt-2">✅ Desde ese momento el Print Agent arranca automáticamente cada vez que enciendas la PC.</p>
           </div>
         </div>
       </div>
 
       <div class="info-box mt-4">
-        <strong>📋 Requisito previo — Instalar driver de impresora:</strong>
-        <ul class="mt-2">
-          <li>Conectá la impresora por USB</li>
-          <li>Descargá e instalá el driver genérico para impresoras térmicas de 80mm:
-            <a href="https://www.gainscha.com.tw/driver.html" target="_blank" class="link-driver">
-              ⬇️ Descargar driver POS-80 (Gainscha)
-            </a>
-          </li>
-          <li>Verificá que aparezca en <strong>Configuración → Impresoras y escáneres</strong></li>
-          <li>Hacé una impresión de prueba desde Windows para confirmar que funciona</li>
-          <li>Recién ahí instalá y configurá el Print Agent</li>
-        </ul>
-
         <strong>⚠️ Importante:</strong>
         <ul class="mt-2">
           <li>El Print Agent debe estar corriendo siempre que la tienda esté abierta.</li>
           <li>La impresora debe estar instalada en Windows antes de configurar el Print Agent.</li>
+          <li>Si el Print Agent no está corriendo, las comandas se guardan igual pero no se imprimen automáticamente.
+          </li>
         </ul>
       </div>
     </div>
@@ -464,7 +481,10 @@ async function cambiarPassword() {
   font-size: 0.875rem;
   text-decoration: none;
 }
-.link-driver:hover { text-decoration: underline; }
+
+.link-driver:hover {
+  text-decoration: underline;
+}
 
 code {
   display: inline-block;
@@ -657,12 +677,23 @@ code {
 }
 
 @media (max-width: 768px) {
-  .tabs { gap: 4px; }
-  .tab-btn { padding: 6px 10px; font-size: 0.78rem; }
+  .tabs {
+    gap: 4px;
+  }
 
-  .form-grid { grid-template-columns: 1fr; }
+  .tab-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
 
-  .tabla-usuarios thead { display: none; }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabla-usuarios thead {
+    display: none;
+  }
+
   .tabla-usuarios tr {
     display: block;
     border: 1.5px solid var(--border, #e9ecef);
@@ -670,6 +701,7 @@ code {
     margin-bottom: 10px;
     padding: 10px;
   }
+
   .tabla-usuarios td {
     display: flex;
     justify-content: space-between;
@@ -678,9 +710,12 @@ code {
     padding: 6px 4px;
     font-size: 0.875rem;
   }
-  .tabla-usuarios td:last-child { border-bottom: none; justify-content: flex-end; }
 
-  
+  .tabla-usuarios td:last-child {
+    border-bottom: none;
+    justify-content: flex-end;
+  }
+
+
 }
-
 </style>
